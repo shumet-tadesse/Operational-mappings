@@ -7,13 +7,28 @@
  */
 
 
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.util.FileManager;
-import org.apache.jena.vocabulary.RDFS;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 
-import java.io.*;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+
+
+
 
 /** Tutorial 5 - read RDF XML from a file and write it to standard out
  */
@@ -103,6 +118,21 @@ public class Tutorial05 extends Object {
         } catch (Exception e) {
             // TODO: handle exception
         }
+        
+        
+        List<String> concepts = new ArrayList<>();
+        List<String> attributes= new ArrayList<>();
+        
+        List<String> subconcepts = new ArrayList<>();
+        List<String> subattributes= new ArrayList<>();
+     // create map to store
+        Map<String, String> map = new HashMap<String, String>();
+       // MultiMap<String,String> map2 = new MultiMap<>();
+        
+        Map<String, List<String>> map2 = new HashMap<>(); 
+        
+        Table<String, String, String> relHandles = HashBasedTable.create();
+        
         StmtIterator iter;
         Statement stmt;
         
@@ -113,7 +143,7 @@ public class Tutorial05 extends Object {
         RDFNode obj;
 
         iter = model.listStatements();
-
+        ArrayList<String> list;
         while (iter.hasNext())
 
             {
@@ -141,13 +171,17 @@ public class Tutorial05 extends Object {
             int idStr = subject.getURI().lastIndexOf('/');
             
             if(obj.toString().endsWith("Class"))
+            {
             	
-            	System.out.println("Subject = " + subject.getURI().substring(idStr+1));
+            	//System.out.println("Subject = " + subject.getURI().substring(idStr+1));
+            	concepts.add(subject.getURI().substring(idStr+1));
+            }
             
             //System.out.println("List of Properties\n");
             if(obj.toString().endsWith("Property"))
             {
-            	System.out.println("Property = " + subject.getURI().substring(idStr+1));
+            	//System.out.println("Property = " + subject.getURI().substring(idStr+1));
+            	attributes.add(subject.getURI().substring(idStr+1));
             }
             
             //if(obj.toString().endsWith("Property"))
@@ -157,11 +191,50 @@ public class Tutorial05 extends Object {
             	{
             	String[] parts = obj.toString().split("/");
                 
-            	System.out.println("Property = " + subject.getURI().substring(idStr+1)+ " domain "+ parts[parts.length-1]);
+            	//System.out.println("Property = " + subject.getURI().substring(idStr+1)+ " domain "+ parts[parts.length-1]);
+            	//relHandles.put((parts[parts.length-1]),"hasAttribute", (subject.getURI().substring(idStr+1)));
+            	//map.put((parts[parts.length-1]),(subject.getURI().substring(idStr+1)));
+            	//System.out.println("maping..."+(parts[parts.length-1]+" and "+ (subject.getURI().substring(idStr+1))));	
+            	//subattributes.add(subject.getURI().substring(idStr+1));
+            	//map2.put((parts[parts.length-1]), subattributes);
+            	
+            	
+            	if(map2.containsKey((parts[parts.length-1]))){
+            	    // if the key has already been used,
+            	    // we'll just grab the array list and add the value to it
+            	    list = (ArrayList<String>) map2.get(parts[parts.length-1]);
+            	    list.add(subject.getURI().substring(idStr+1));
+            	} else {
+            	    // if the key hasn't been used yet,
+            	    // we'll create a new ArrayList<String> object, add the value
+            	    // and put it in the array list with the new key
+            	    list = new ArrayList<String>();
+            	    list.add(subject.getURI().substring(idStr+1));
+            	    map2.put(parts[parts.length-1], list);
+            	}
+            	
             	}
             //}
             
             }
+        
+        
+       // for (Map.Entry<String, String> entry : map.entrySet()) {
+         //   String key = entry.getKey();
+         //   String values = entry.getValue();
+         //   System.out.println("Key = " + key);
+          //  System.out.println("Values = " + values + "\n");
+       // }
+        
+        Set<String> keys = map2.keySet();
+        for (String key : keys) {
+            System.out.println("Key = " + key+" Values = " + map2.get(key));
+           // System.out.println("Values = " + map2.get(key));
+       // System.out.println("created atoms ");
+       // System.out.println(concepts);
+       // System.out.println(attributes);
+       // System.out.println("Relationships");
+       // System.out.println(relHandles);
 
             }
 /*Model model = ModelFactory.createDefaultModel();
@@ -261,3 +334,4 @@ public class Tutorial05 extends Object {
        // model.write(System.out);
     }
     
+}
